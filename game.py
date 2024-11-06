@@ -8,6 +8,43 @@ SUITS = ['Hearts', 'Diamonds', 'Clubs', 'Spades']
 VALUES = ['2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A']
 CARD_VALUES = {'2': 2, '3': 3, '4': 4, '5': 5, '6': 6, '7': 7, '8': 8, '9': 9, '10': 10, 'J': 10, 'Q': 10, 'K': 10, 'A': 11}
 
+class RulesWindow(QWidget):
+    def __init__(self):
+        super().__init__()
+        
+        self.setWindowTitle("Game Rules")
+        
+        layout = QVBoxLayout()
+        
+        # Rules Text
+        self.rules_label = QLabel(
+            "Blackjack Rules:\n\n"
+            "1. The goal of Blackjack is to have a hand value as close to 21 as possible, without going over.\n"
+            "2. Face cards (King, Queen, Jack) are worth 10 points.\n"
+            "3. Aces can be worth 1 or 11 points, depending on what is more beneficial.\n"
+            "4. Players and the dealer are both dealt two cards.\n"
+            "5. Players can choose to 'Hit' (draw a card) or 'Stand' (end their turn).\n"
+            "6. The dealer must hit until their total is at least 17.\n"
+            "7. If the player's hand exceeds 21, they lose (bust).\n"
+            "8. If the dealer's hand exceeds 21, the player wins.\n"
+            "9. If both player and dealer have the same hand value, the game is a tie.\n"
+            "\nGood luck and have fun!"
+        )
+        self.rules_label.setAlignment(Qt.AlignLeft)
+        layout.addWidget(self.rules_label)
+        
+        # Close button
+        self.close_button = QPushButton("Close Rules")
+        self.close_button.clicked.connect(self.close_rules)
+        layout.addWidget(self.close_button)
+        
+        self.setLayout(layout)
+    
+    def close_rules(self):
+        """Close the rules window and go back to the intro screen."""
+        self.close()
+
+
 class IntroScreen(QWidget):
     def __init__(self, game_window):
         super().__init__()
@@ -39,17 +76,28 @@ class IntroScreen(QWidget):
         self.start_button.clicked.connect(self.start_game)
         layout.addWidget(self.start_button)
         
+        # View Rules button
+        self.view_rules_button = QPushButton("View Rules")
+        self.view_rules_button.clicked.connect(self.view_rules)
+        layout.addWidget(self.view_rules_button)
+        
         self.setLayout(layout)
         
     def start_game(self):
         """Hide the intro screen and show the main game."""
         self.hide()  # Hide the Intro Screen
         self.game_window.show()  # Show the main Blackjack game window
+    
+    def view_rules(self):
+        """Show the rules window."""
+        self.rules_window = RulesWindow()  # Create an instance of the Rules window
+        self.rules_window.show()  # Show the rules window
+
 
 class BlackjackGame(QWidget):
     def __init__(self):
         super().__init__()
-        self.setWindowTitle("Blackjack")
+        self.setWindowTitle("Blackjack Game")
         
         # Initialize game state and counters
         self.deck = self.create_deck()
@@ -212,11 +260,8 @@ class BlackjackGame(QWidget):
         
     def end_game(self):
         """End the game and show the Play Again button."""
-        # Disable the game action buttons
         self.hit_button.setDisabled(True)
         self.stand_button.setDisabled(True)
-        
-        # Show the Play Again button
         self.play_again_button.setVisible(True)
 
     def play_again(self):
