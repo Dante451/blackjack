@@ -67,7 +67,7 @@ class IntroScreen(QWidget):
         layout.addWidget(self.desc_label)
 
         # Version label
-        self.vers_label = QLabel("The current version is v1.2")
+        self.vers_label = QLabel("The current version is v1.3.1")
         self.vers_label.setAlignment(Qt.AlignCenter)
         layout.addWidget(self.vers_label)
         
