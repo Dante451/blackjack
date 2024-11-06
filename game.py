@@ -1,17 +1,55 @@
 import sys
 import random
-from PySide6.QtWidgets import QApplication, QWidget, QVBoxLayout, QPushButton, QLabel, QHBoxLayout
-from PySide6.QtCore import Qt
+from PySide6.QtWidgets import QApplication, QWidget, QVBoxLayout, QPushButton, QLabel, QHBoxLayout, QStackedWidget
+from PySide6.QtCore import Qt, QTimer
 
 # Card deck creation and handling
 SUITS = ['Hearts', 'Diamonds', 'Clubs', 'Spades']
 VALUES = ['2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A']
 CARD_VALUES = {'2': 2, '3': 3, '4': 4, '5': 5, '6': 6, '7': 7, '8': 8, '9': 9, '10': 10, 'J': 10, 'Q': 10, 'K': 10, 'A': 11}
 
+class IntroScreen(QWidget):
+    def __init__(self, game_window):
+        super().__init__()
+        
+        self.game_window = game_window  # Reference to the main Blackjack game window
+        
+        # Set up Introductory Screen UI
+        self.setWindowTitle("Welcome to Blackjack!")
+        
+        layout = QVBoxLayout()
+        
+        # Title label
+        self.title_label = QLabel("Welcome to the Blackjack Game!")
+        self.title_label.setAlignment(Qt.AlignCenter)
+        layout.addWidget(self.title_label)
+        
+        # Description label
+        self.desc_label = QLabel("Learn how to play and try your luck!")
+        self.desc_label.setAlignment(Qt.AlignCenter)
+        layout.addWidget(self.desc_label)
+
+        # Version label
+        self.vers_label = QLabel("The current version is v1.2")
+        self.vers_label.setAlignment(Qt.AlignCenter)
+        layout.addWidget(self.vers_label)
+        
+        # Start button
+        self.start_button = QPushButton("Start Game")
+        self.start_button.clicked.connect(self.start_game)
+        layout.addWidget(self.start_button)
+        
+        self.setLayout(layout)
+        
+    def start_game(self):
+        """Hide the intro screen and show the main game."""
+        self.hide()  # Hide the Intro Screen
+        self.game_window.show()  # Show the main Blackjack game window
+
 class BlackjackGame(QWidget):
     def __init__(self):
         super().__init__()
-        self.setWindowTitle("Blackjack Game")
+        self.setWindowTitle("Blackjack")
         
         # Initialize game state and counters
         self.deck = self.create_deck()
@@ -188,8 +226,15 @@ class BlackjackGame(QWidget):
         self.hit_button.setEnabled(True)  # Enable the action buttons
         self.stand_button.setEnabled(True)
 
+
 if __name__ == "__main__":
     app = QApplication(sys.argv)
-    window = BlackjackGame()
-    window.show()
+    
+    # Create the main game window and the intro screen
+    game_window = BlackjackGame()
+    intro_screen = IntroScreen(game_window)
+    
+    # Show the intro screen first
+    intro_screen.show()
+    
     sys.exit(app.exec())
