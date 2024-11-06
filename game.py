@@ -13,12 +13,14 @@ class BlackjackGame(QWidget):
         super().__init__()
         self.setWindowTitle("Blackjack Game")
         
-        # Initialize game state
+        # Initialize game state and counters
         self.deck = self.create_deck()
         self.player_hand = []
         self.dealer_hand = []
         self.player_total = 0
         self.dealer_total = 0
+        self.wins = 0
+        self.losses = 0
         
         # Create the UI components
         self.init_ui()
@@ -36,6 +38,12 @@ class BlackjackGame(QWidget):
         self.dealer_label = QLabel("Dealer's hand: ")
         self.layout.addWidget(self.player_label)
         self.layout.addWidget(self.dealer_label)
+        
+        # Win and Loss counters
+        self.win_label = QLabel(f"Wins: {self.wins}")
+        self.loss_label = QLabel(f"Losses: {self.losses}")
+        self.layout.addWidget(self.win_label)
+        self.layout.addWidget(self.loss_label)
         
         # Button layout
         self.button_layout = QHBoxLayout()
@@ -97,15 +105,22 @@ class BlackjackGame(QWidget):
         # Update the game state
         if self.player_total > 21:
             self.status_label.setText("You busted! Game Over.")
+            self.losses += 1
             self.end_game()
         elif self.dealer_total > 21:
             self.status_label.setText("Dealer busted! You win!")
+            self.wins += 1
             self.end_game()
         elif self.player_total == 21:
             self.status_label.setText("Blackjack! You win!")
+            self.wins += 1
             self.end_game()
         else:
             self.status_label.setText("Your turn! Choose hit or stand.")
+        
+        # Update the win/loss counters
+        self.win_label.setText(f"Wins: {self.wins}")
+        self.loss_label.setText(f"Losses: {self.losses}")
         
     def calculate_hand_total(self, hand):
         """Calculate the total value of a hand."""
@@ -142,12 +157,16 @@ class BlackjackGame(QWidget):
         
         if self.player_total > 21:
             self.status_label.setText("You busted! Game Over.")
+            self.losses += 1
         elif self.dealer_total > 21:
             self.status_label.setText("Dealer busted! You win!")
+            self.wins += 1
         elif self.player_total > self.dealer_total:
             self.status_label.setText("You win!")
+            self.wins += 1
         elif self.player_total < self.dealer_total:
             self.status_label.setText("Dealer wins!")
+            self.losses += 1
         else:
             self.status_label.setText("It's a tie!")
         

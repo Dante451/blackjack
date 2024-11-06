@@ -1,0 +1,8 @@
+Changelog:
+v1.0: Added a replay feature, allowing users to simply press replay 
+      instead of manually exiting the program
+
+v1.1: Added a win / loss feature that tracks how many times you have won or lost
+      that updates every time you play again
+
+v1.2:
