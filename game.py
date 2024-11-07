@@ -41,11 +41,19 @@ class BlackjackGame(QWidget):
         self.button_layout = QHBoxLayout()
         self.hit_button = QPushButton("Hit")
         self.stand_button = QPushButton("Stand")
+        self.play_again_button = QPushButton("Play Again")  # Added Play Again button
         self.hit_button.clicked.connect(self.hit)
         self.stand_button.clicked.connect(self.stand)
+        self.play_again_button.clicked.connect(self.play_again)  # Play Again button callback
+        
         self.button_layout.addWidget(self.hit_button)
         self.button_layout.addWidget(self.stand_button)
+        self.button_layout.addWidget(self.play_again_button)  # Add to the layout
+        
         self.layout.addLayout(self.button_layout)
+        
+        # Initially hide the Play Again button
+        self.play_again_button.setHidden(True)
         
         # Reset the game
         self.reset_game()
@@ -89,16 +97,13 @@ class BlackjackGame(QWidget):
         # Update the game state
         if self.player_total > 21:
             self.status_label.setText("You busted! Game Over.")
-            self.hit_button.setDisabled(True)
-            self.stand_button.setDisabled(True)
+            self.end_game()
         elif self.dealer_total > 21:
             self.status_label.setText("Dealer busted! You win!")
-            self.hit_button.setDisabled(True)
-            self.stand_button.setDisabled(True)
+            self.end_game()
         elif self.player_total == 21:
             self.status_label.setText("Blackjack! You win!")
-            self.hit_button.setDisabled(True)
-            self.stand_button.setDisabled(True)
+            self.end_game()
         else:
             self.status_label.setText("Your turn! Choose hit or stand.")
         
@@ -146,9 +151,23 @@ class BlackjackGame(QWidget):
         else:
             self.status_label.setText("It's a tie!")
         
+        self.end_game()
+        
+    def end_game(self):
+        """End the game and show the Play Again button."""
+        # Disable the game action buttons
         self.hit_button.setDisabled(True)
         self.stand_button.setDisabled(True)
         
+        # Show the Play Again button
+        self.play_again_button.setVisible(True)
+
+    def play_again(self):
+        """Reset the game for a new round."""
+        self.play_again_button.setHidden(True)  # Hide the Play Again button
+        self.reset_game()  # Reset the game to the initial state
+        self.hit_button.setEnabled(True)  # Enable the action buttons
+        self.stand_button.setEnabled(True)
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
