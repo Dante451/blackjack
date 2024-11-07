@@ -66,6 +66,11 @@ class IntroScreen(QWidget):
         self.desc_label.setAlignment(Qt.AlignCenter)
         layout.addWidget(self.desc_label)
         
+        # Version label
+        self.vers_label = QLabel("The current version is v1.2")
+        self.vers_label.setAlignment(Qt.AlignCenter)
+        layout.addWidget(self.vers_label)
+
         # Start button
         self.start_button = QPushButton("Start Game")
         self.start_button.clicked.connect(self.start_game)
