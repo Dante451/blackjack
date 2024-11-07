@@ -3,7 +3,7 @@ import random
 from PySide6.QtWidgets import QApplication, QWidget, QVBoxLayout, QPushButton, QLabel, QHBoxLayout, QDialog
 from PySide6.QtCore import Qt
 
-# Card deck creation and handlin
+# Card deck creation and handling
 SUITS = ['Hearts', 'Diamonds', 'Clubs', 'Spades']
 VALUES = ['2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A']
 CARD_VALUES = {'2': 2, '3': 3, '4': 4, '5': 5, '6': 6, '7': 7, '8': 8, '9': 9, '10': 10, 'J': 10, 'Q': 10, 'K': 10, 'A': 11}
