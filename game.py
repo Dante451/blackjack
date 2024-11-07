@@ -1,14 +1,42 @@
 import sys
 import random
-from PySide6.QtWidgets import QApplication, QWidget, QVBoxLayout, QPushButton, QLabel, QHBoxLayout, QStackedWidget
-from PySide6.QtCore import Qt, QTimer
+from PySide6.QtWidgets import QApplication, QWidget, QVBoxLayout, QPushButton, QLabel, QHBoxLayout, QDialog
+from PySide6.QtCore import Qt
 
 # Card deck creation and handling
 SUITS = ['Hearts', 'Diamonds', 'Clubs', 'Spades']
 VALUES = ['2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A']
 CARD_VALUES = {'2': 2, '3': 3, '4': 4, '5': 5, '6': 6, '7': 7, '8': 8, '9': 9, '10': 10, 'J': 10, 'Q': 10, 'K': 10, 'A': 11}
 
-class RulesWindow(QWidget):
+class StatisticsWindow(QDialog):
+    def __init__(self, wins, losses, last_games):
+        super().__init__()
+        
+        self.setWindowTitle("Game Statistics")
+        
+        layout = QVBoxLayout()
+        
+        # Display win/loss ratio
+        win_loss_ratio = f"Win/Loss Ratio: {wins}/{losses} ({wins / (wins + losses) if (wins + losses) > 0 else 0:.2f})"
+        self.win_loss_label = QLabel(win_loss_ratio)
+        layout.addWidget(self.win_loss_label)
+        
+        # Display results of the last 5 games
+        self.last_games_label = QLabel("Results of Last 5 Games:")
+        layout.addWidget(self.last_games_label)
+        
+        last_games_text = "\n".join([f"Game {i+1}: {result}" for i, result in enumerate(last_games)])
+        self.last_games_display = QLabel(last_games_text)
+        layout.addWidget(self.last_games_display)
+        
+        # Close button
+        self.close_button = QPushButton("Close")
+        self.close_button.clicked.connect(self.close)
+        layout.addWidget(self.close_button)
+        
+        self.setLayout(layout)
+
+class RulesWindow(QDialog):
     def __init__(self):
         super().__init__()
         
@@ -16,34 +44,19 @@ class RulesWindow(QWidget):
         
         layout = QVBoxLayout()
         
-        # Rules Text
-        self.rules_label = QLabel(
-            "Blackjack Rules:\n\n"
-            "1. The goal of Blackjack is to have a hand value as close to 21 as possible, without going over.\n"
-            "2. Face cards (King, Queen, Jack) are worth 10 points.\n"
-            "3. Aces can be worth 1 or 11 points, depending on what is more beneficial.\n"
-            "4. Players and the dealer are both dealt two cards.\n"
-            "5. Players can choose to 'Hit' (draw a card) or 'Stand' (end their turn).\n"
-            "6. The dealer must hit until their total is at least 17.\n"
-            "7. If the player's hand exceeds 21, they lose (bust).\n"
-            "8. If the dealer's hand exceeds 21, the player wins.\n"
-            "9. If both player and dealer have the same hand value, the game is a tie.\n"
-            "\nGood luck and have fun!"
-        )
-        self.rules_label.setAlignment(Qt.AlignLeft)
+        self.rules_label = QLabel("Blackjack Rules:\n\n- Aim to get a hand total of 21 or as close as possible.\n"
+                                   "- Face cards (J, Q, K) are worth 10 points.\n- Aces are worth 1 or 11 points.\n"
+                                   "- The player and dealer are each dealt two cards.\n"
+                                   "- The player can choose to 'Hit' to take another card or 'Stand' to keep their hand.\n"
+                                   "- The dealer must 'Hit' if their total is below 17 and 'Stand' if it is 17 or higher.")
         layout.addWidget(self.rules_label)
         
         # Close button
-        self.close_button = QPushButton("Close Rules")
-        self.close_button.clicked.connect(self.close_rules)
+        self.close_button = QPushButton("Close")
+        self.close_button.clicked.connect(self.close)
         layout.addWidget(self.close_button)
         
         self.setLayout(layout)
-    
-    def close_rules(self):
-        """Close the rules window and go back to the intro screen."""
-        self.close()
-
 
 class IntroScreen(QWidget):
     def __init__(self, game_window):
@@ -67,7 +80,7 @@ class IntroScreen(QWidget):
         layout.addWidget(self.desc_label)
 
         # Version label
-        self.vers_label = QLabel("The current version is v1.3.1")
+        self.vers_label = QLabel("The current version is v1.4")
         self.vers_label.setAlignment(Qt.AlignCenter)
         layout.addWidget(self.vers_label)
         
@@ -93,7 +106,6 @@ class IntroScreen(QWidget):
         self.rules_window = RulesWindow()  # Create an instance of the Rules window
         self.rules_window.show()  # Show the rules window
 
-
 class BlackjackGame(QWidget):
     def __init__(self):
         super().__init__()
@@ -107,6 +119,7 @@ class BlackjackGame(QWidget):
         self.dealer_total = 0
         self.wins = 0
         self.losses = 0
+        self.last_games = []  # Store results of last 5 games
         
         # Create the UI components
         self.init_ui()
@@ -135,14 +148,18 @@ class BlackjackGame(QWidget):
         self.button_layout = QHBoxLayout()
         self.hit_button = QPushButton("Hit")
         self.stand_button = QPushButton("Stand")
-        self.play_again_button = QPushButton("Play Again")  # Added Play Again button
+        self.play_again_button = QPushButton("Play Again")
+        self.statistics_button = QPushButton("Statistics")
+        
         self.hit_button.clicked.connect(self.hit)
         self.stand_button.clicked.connect(self.stand)
-        self.play_again_button.clicked.connect(self.play_again)  # Play Again button callback
+        self.play_again_button.clicked.connect(self.play_again)
+        self.statistics_button.clicked.connect(self.show_statistics)  # New connection to statistics window
         
         self.button_layout.addWidget(self.hit_button)
         self.button_layout.addWidget(self.stand_button)
-        self.button_layout.addWidget(self.play_again_button)  # Add to the layout
+        self.button_layout.addWidget(self.play_again_button)
+        self.button_layout.addWidget(self.statistics_button)  # Add the Statistics button
         
         self.layout.addLayout(self.button_layout)
         
@@ -184,22 +201,23 @@ class BlackjackGame(QWidget):
     def update_ui(self):
         """Update the UI labels with the current hands and totals."""
         self.player_label.setText(f"Your hand: {', '.join(self.player_hand)} (Total: {self.player_total})")
-        
-        # Show one card of the dealer's hand initially
         self.dealer_label.setText(f"Dealer's hand: {self.dealer_hand[0]}, ? (Total: ?)")
-
+        
         # Update the game state
         if self.player_total > 21:
             self.status_label.setText("You busted! Game Over.")
             self.losses += 1
+            self.last_games.append("Loss")
             self.end_game()
         elif self.dealer_total > 21:
             self.status_label.setText("Dealer busted! You win!")
             self.wins += 1
+            self.last_games.append("Win")
             self.end_game()
         elif self.player_total == 21:
             self.status_label.setText("Blackjack! You win!")
             self.wins += 1
+            self.last_games.append("Win")
             self.end_game()
         else:
             self.status_label.setText("Your turn! Choose hit or stand.")
@@ -208,6 +226,10 @@ class BlackjackGame(QWidget):
         self.win_label.setText(f"Wins: {self.wins}")
         self.loss_label.setText(f"Losses: {self.losses}")
         
+        # Keep the last 5 game results
+        if len(self.last_games) > 5:
+            self.last_games.pop(0)
+
     def calculate_hand_total(self, hand):
         """Calculate the total value of a hand."""
         total = 0
@@ -217,7 +239,6 @@ class BlackjackGame(QWidget):
             total += CARD_VALUES[value]
             if value == 'A':
                 aces += 1
-        # Adjust for aces
         while total > 21 and aces:
             total -= 10
             aces -= 1
@@ -231,10 +252,8 @@ class BlackjackGame(QWidget):
 
     def stand(self):
         """Player stands. Dealer plays."""
-        # Reveal dealer's second card
         self.dealer_label.setText(f"Dealer's hand: {', '.join(self.dealer_hand)} (Total: {self.dealer_total})")
         
-        # Dealer's turn (dealer hits until they have at least 17)
         while self.dealer_total < 17:
             self.dealer_hand.append(self.deck.pop())
             self.dealer_total = self.calculate_hand_total(self.dealer_hand)
@@ -243,40 +262,50 @@ class BlackjackGame(QWidget):
         
         if self.player_total > 21:
             self.status_label.setText("You busted! Game Over.")
-            self.losses += 1
+            self.losses += 1  # Ensure loss is registered here
+            self.last_games.append("Loss")
         elif self.dealer_total > 21:
             self.status_label.setText("Dealer busted! You win!")
-            self.wins += 1
+            self.wins += 1  # Ensure win is registered here
+            self.last_games.append("Win")
         elif self.player_total > self.dealer_total:
             self.status_label.setText("You win!")
             self.wins += 1
+            self.last_games.append("Win")
         elif self.player_total < self.dealer_total:
             self.status_label.setText("Dealer wins!")
             self.losses += 1
+            self.last_games.append("Loss")
         else:
             self.status_label.setText("It's a tie!")
         
         self.end_game()
         
     def end_game(self):
-        """End the game and show the Play Again button."""
+        """End the game and show the Play Again button.""" 
         self.hit_button.setDisabled(True)
         self.stand_button.setDisabled(True)
         self.play_again_button.setVisible(True)
 
     def play_again(self):
-        """Reset the game for a new round."""
-        self.play_again_button.setHidden(True)  # Hide the Play Again button
-        self.reset_game()  # Reset the game to the initial state
-        self.hit_button.setEnabled(True)  # Enable the action buttons
+        """Reset the game for a new round.""" 
+        self.play_again_button.setHidden(True)
+        self.reset_game()
+        self.hit_button.setEnabled(True)
         self.stand_button.setEnabled(True)
 
+    def show_statistics(self):
+        """Show the statistics window."""
+        _window = StatisticsWindow(self.wins, self.losses, self.last_games)
+        _window.exec()
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
     
-    # Create the main game window and the intro screen
+    # Create the main Blackjack game window
     game_window = BlackjackGame()
+    
+    # Create the intro screen and pass the game window to it
     intro_screen = IntroScreen(game_window)
     
     # Show the intro screen first
